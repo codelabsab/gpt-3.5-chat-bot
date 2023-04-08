@@ -1,6 +1,6 @@
-require('dotenv/config');
-const { Client, IntentsBitField } = require('discord.js');
-const { Configuration, OpenAIApi } = require('openai');
+require("dotenv/config");
+const { Client, IntentsBitField } = require("discord.js");
+const { Configuration, OpenAIApi } = require("openai");
 
 const client = new Client({
   intents: [
@@ -10,8 +10,8 @@ const client = new Client({
   ],
 });
 
-client.on('ready', () => {
-  console.log('The bot is online!');
+client.on("ready", () => {
+  console.log("The bot is online!");
 });
 
 const configuration = new Configuration({
@@ -19,12 +19,19 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-client.on('messageCreate', async (message) => {
+client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (message.channel.id !== process.env.CHANNEL_ID) return;
-  if (message.content.startsWith('!')) return;
-
+  if (message.content.startsWith("!")) return;
+  if (!message.content.startsWith("<@968419195769471026>")) return;
+  if (message.content.startsWith("<@968419195769471026> help")) {
+    message.reply(
+      `You can ask me anything you like, På Svenska or English, just start your message with my name and a space. For example, @${client.user.username} What is the meaning of life?`
+    );
+    return;
+  }
   let conversationLog = [{ role: 'system', content: 'You are a friendly chatbot.' }];
+
 
   try {
     await message.channel.sendTyping();
@@ -33,19 +40,20 @@ client.on('messageCreate', async (message) => {
     prevMessages.reverse();
 
     prevMessages.forEach((msg) => {
-      if (message.content.startsWith('!')) return;
+      if (message.content.startsWith("!")) return;
+      if (!message.content.startsWith("<@968419195769471026>")) return;
       if (msg.author.id !== client.user.id && message.author.bot) return;
       if (msg.author.id !== message.author.id) return;
 
       conversationLog.push({
-        role: 'user',
+        role: "user",
         content: msg.content,
       });
     });
 
     const result = await openai
       .createChatCompletion({
-        model: 'gpt-3.5-turbo',
+        model: "gpt-3.5-turbo",
         messages: conversationLog,
         // max_tokens: 256, // limit token usage
       })
